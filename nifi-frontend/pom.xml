@@ -341,6 +341,7 @@
                 <version>${frontend.mvn.plugin.version}</version>
                 <configuration>
                     <installDirectory>${frontend.working.dir}</installDirectory>
+                    <npmInheritsProxyConfigFromMaven>false</npmInheritsProxyConfigFromMaven>
                 </configuration>
                 <executions>
                     <!--

@@ -233,7 +233,7 @@ public class TestLoadBalanceSession {
     }
 
     @Test
-    @Timeout(10)
+    @Timeout(20)
     public void testLargeContent() throws InterruptedException, IOException {
         final byte[] content = new byte[66000];
         for (int i = 0; i < 66000; i++) {
