@@ -84,8 +84,10 @@ public class NiFiWebApiConfiguration {
         final URI logoutUri;
         final boolean externalLoginRequired;
 
-        // HTTPS is required for authentication
-        if (properties.isHTTPSConfigured()) {
+        // HTTPS is required for authentication, unless OIDC has been explicitly allowed over HTTP
+        // (e.g. when TLS is terminated by an upstream proxy or load balancer)
+        final boolean oidcAllowedOverHttp = properties.isOidcEnabled() && properties.isOidcAllowedOverHttp();
+        if (properties.isHTTPSConfigured() || oidcAllowedOverHttp) {
             final String loginIdentityProvider = properties.getProperty(NiFiProperties.SECURITY_USER_LOGIN_IDENTITY_PROVIDER);
             if (properties.isOidcEnabled()) {
                 externalLoginRequired = true;

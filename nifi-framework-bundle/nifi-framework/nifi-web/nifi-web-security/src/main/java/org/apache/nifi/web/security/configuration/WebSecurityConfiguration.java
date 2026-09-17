@@ -157,7 +157,7 @@ public class WebSecurityConfiguration {
             deprecationLogger.warn("Anonymous Authentication [{}] is deprecated for removal", NiFiProperties.SECURITY_ANONYMOUS_AUTHENTICATION);
         }
 
-        if (properties.isAnonymousAuthenticationAllowed() || properties.isHttpEnabled()) {
+        if (properties.isAnonymousAuthenticationAllowed() || (properties.isHttpEnabled() && !isOidcAllowedOverHttp(properties))) {
             http.addFilterAfter(anonymousAuthenticationFilter, AnonymousAuthenticationFilter.class);
         }
 
@@ -185,5 +185,17 @@ public class WebSecurityConfiguration {
         }
 
         return http.build();
+    }
+
+    /**
+     * Determines whether OIDC has been explicitly allowed to be used without a local HTTPS
+     * connector, so that the automatic anonymous authentication fallback for HTTP requests can
+     * be suppressed in favor of the OIDC authentication challenge.
+     *
+     * @param properties NiFi Properties
+     * @return whether OIDC login over HTTP is allowed
+     */
+    private boolean isOidcAllowedOverHttp(final NiFiProperties properties) {
+        return properties.isOidcEnabled() && properties.isOidcAllowedOverHttp();
     }
 }

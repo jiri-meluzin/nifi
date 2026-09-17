@@ -112,8 +112,8 @@ public class AccessResource extends ApplicationResource {
             @FormParam("username") final String username,
             @FormParam("password") final String password) {
 
-        // only support access tokens when communicating over HTTPS
-        if (!httpServletRequest.isSecure()) {
+        // only support access tokens when communicating over HTTPS, unless OIDC has been explicitly allowed over HTTP
+        if (!httpServletRequest.isSecure() && !isOidcAllowedOverHttp()) {
             throw new AuthenticationNotSupportedException("Access tokens are only issued over HTTPS.");
         }
 
@@ -165,7 +165,7 @@ public class AccessResource extends ApplicationResource {
             }
     )
     public Response logOut(@Context HttpServletRequest httpServletRequest, @Context HttpServletResponse httpServletResponse) {
-        if (!httpServletRequest.isSecure()) {
+        if (!httpServletRequest.isSecure() && !isOidcAllowedOverHttp()) {
             throw new IllegalStateException(AUTHENTICATION_NOT_ENABLED_MSG);
         }
 
@@ -209,7 +209,7 @@ public class AccessResource extends ApplicationResource {
             }
     )
     public void logOutComplete(@Context HttpServletRequest httpServletRequest, @Context HttpServletResponse httpServletResponse) throws Exception {
-        if (!httpServletRequest.isSecure()) {
+        if (!httpServletRequest.isSecure() && !isOidcAllowedOverHttp()) {
             throw new IllegalStateException("User authentication/authorization is only supported when running over HTTPS.");
         }
 
@@ -238,6 +238,17 @@ public class AccessResource extends ApplicationResource {
 
     private String getNiFiLogoutCompleteUri() {
         return getNiFiUri() + "logout-complete";
+    }
+
+    /**
+     * Determines whether OIDC has been explicitly allowed to be used without a local HTTPS
+     * connector, so that HTTPS-only access token and logout enforcement can be relaxed in
+     * favor of the OIDC authentication flow.
+     *
+     * @return whether OIDC login over HTTP is allowed
+     */
+    private boolean isOidcAllowedOverHttp() {
+        return properties.isOidcEnabled() && properties.isOidcAllowedOverHttp();
     }
 
     /**

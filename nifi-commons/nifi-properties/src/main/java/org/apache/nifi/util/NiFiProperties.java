@@ -193,6 +193,7 @@ public class NiFiProperties extends ApplicationProperties {
     public static final String NIFI_SECURITY_USER_OIDC_CLAIM_GROUPS = "nifi.security.user.oidc.claim.groups";
     public static final String SECURITY_USER_OIDC_FALLBACK_CLAIMS_IDENTIFYING_USER = "nifi.security.user.oidc.fallback.claims.identifying.user";
     public static final String SECURITY_USER_OIDC_TOKEN_REFRESH_WINDOW = "nifi.security.user.oidc.token.refresh.window";
+    public static final String SECURITY_USER_OIDC_ALLOW_HTTP = "nifi.security.user.oidc.allow.http";
 
     // saml
     public static final String SECURITY_USER_SAML_IDP_METADATA_URL = "nifi.security.user.saml.idp.metadata.url";
@@ -1017,6 +1018,18 @@ public class NiFiProperties extends ApplicationProperties {
      */
     public boolean isOidcEnabled() {
         return !StringUtils.isBlank(getOidcDiscoveryUrl());
+    }
+
+    /**
+     * Returns whether OpenId Connect (OIDC) authentication is allowed to be used when NiFi is
+     * running without a local HTTPS connector (for example, when TLS is terminated by an
+     * upstream proxy or load balancer). Defaults to false, since NiFi cannot otherwise guarantee
+     * the confidentiality of the authentication flow or resulting session.
+     *
+     * @return whether OIDC login is allowed over HTTP
+     */
+    public boolean isOidcAllowedOverHttp() {
+        return Boolean.parseBoolean(getProperty(SECURITY_USER_OIDC_ALLOW_HTTP, "false"));
     }
 
     /**

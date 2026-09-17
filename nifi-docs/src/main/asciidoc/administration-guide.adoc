@@ -631,6 +631,7 @@ authorization process to use ID token claim groups. The default value is `groups
 The value of `JDK` uses the Java platform default configuration stored in `cacerts` under the Java Home directory.
 The value of `NIFI` enables using the trust store configured in the `nifi.security.truststore` property. The default value is `JDK`
 |`nifi.security.user.oidc.token.refresh.window`             | The Token Refresh Window specifies the amount of time before the NiFi authorization session expires when the application will attempt to renew access using a cached Refresh Token. The default is `60 secs`
+|`nifi.security.user.oidc.allow.http`                       | Allows OpenID Connect login to be used when NiFi is not configured with a local HTTPS connector (`nifi.web.https.port` unset). This is disabled by default because NiFi cannot otherwise guarantee the confidentiality of the authentication flow or resulting session. Only set this to `true` when TLS is terminated by a trusted upstream proxy or load balancer and the network path to NiFi is trusted. The default value is `false`
 |==================================================================================================================================================
 
 ==== OpenID Connect REST Resources
