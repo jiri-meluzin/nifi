@@ -99,7 +99,11 @@ public class AuthorizerFactoryBean implements FactoryBean<Authorizer>, Disposabl
     @Override
     public Authorizer getObject() throws Exception {
         if (authorizer == null) {
-            if (properties.getSslPort() == null) {
+            // OIDC may be explicitly allowed over HTTP (e.g. when TLS is terminated by an
+            // upstream proxy/ingress), in which case a configured Authorizer must still be
+            // honored even though there is no local HTTPS connector.
+            final boolean oidcAllowedOverHttp = properties.isOidcEnabled() && properties.isOidcAllowedOverHttp();
+            if (properties.getSslPort() == null && !oidcAllowedOverHttp) {
                 // use a default authorizer... only allowable when running not securely
                 authorizer = createDefaultAuthorizer();
             } else {
