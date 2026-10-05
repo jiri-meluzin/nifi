@@ -129,7 +129,11 @@ public class TestLoadBalanceSession {
 
         Thread.sleep(100L);
 
-        while (transaction.communicate()) {
+        // communicate() can return false while the transaction is still in progress (e.g., a non-blocking write
+        // returns 0 bytes because the socket send buffer is temporarily full). Keep calling it until the session
+        // actually reports completion rather than stopping at the first "no progress" result.
+        while (!transaction.getSessionState().isComplete()) {
+            transaction.communicate();
         }
 
         assertTrue(transaction.getSessionState().isComplete());
@@ -217,7 +221,9 @@ public class TestLoadBalanceSession {
         // If the same channel is reused for the next transaction, it again writes protocol-version byte 1.
         final LoadBalanceSession session2 = new LoadBalanceSession(partition1, contentAccess, new StandardLoadBalanceFlowFileCodec(), peerChannel, 30000,
             new SimpleLimitThreshold(100, 10_000_000));
-        while (session2.communicate()) {
+        // See testLargeContent for why completion, rather than a single false return, is the correct loop condition.
+        while (!session2.getSessionState().isComplete()) {
+            session2.communicate();
         }
 
         // Two protocol-version bytes then sit back-to-back on the stream: the abandoned transaction's, then the reused
@@ -261,7 +267,11 @@ public class TestLoadBalanceSession {
 
         Thread.sleep(100L);
 
-        while (transaction.communicate()) {
+        // communicate() can return false while the transaction is still in progress (e.g., a non-blocking write
+        // of this 66,000-byte payload returns 0 when the socket send buffer is temporarily full, particularly
+        // under CPU contention from parallel builds). Loop on session completion, not a single false return.
+        while (!transaction.getSessionState().isComplete()) {
+            transaction.communicate();
         }
 
         socketChannel.close();
